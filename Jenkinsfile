@@ -3,11 +3,11 @@ pipeline{
     environment{
         PATH = "/opt/maven/bin:$PATH"
     }
+    
     stages{
-        stage("git clone"){
+        stage('git clone'){
             steps{
-                git url: 'https://github.com/PankajSonii/saidemytrend.git', branch: 'main'
-                
+                git url: 'https://github.com/PankajSonii/saidemytrend.git', branch: 'main' 
             }
         }
         
