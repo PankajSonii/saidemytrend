@@ -1,3 +1,5 @@
+def registry = 'https://triale7vkk5.jfrog.io/'
+
 pipeline{
     agent any
     environment{
@@ -30,5 +32,33 @@ pipeline{
                 }
             }
         }
+
+        stage('Jar Publish'){
+            steps{
+                script{
+                    def server = Artifactory.newServer url: registry + "/artifactory", credentialsId: "artifact-cred"
+                    def properties = "buildid = ${env.BUILD_ID},commitid=${GIT_COMMIT}"
+                    def uploadSec = """ {
+                    " files" : [
+                    {
+                    "pattern": "jarstaging/(*)",
+                    "target": "soni-libs-release-local/{1}",
+                    "flat" : "false",
+                    "props" : "${properties}",
+                    "exclusions" : [" *.sha1", "*.md5"]
+                    }
+                    ]
+                    } """
+
+                    def buildInfo = server.upload(uploadSpec)
+                    buildInfo.env.collect()
+                    server.publishBuildInfo(buildInfo)
+
+                }
+            }
+        }
     }
 }
+                    
+    
+
