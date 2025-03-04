@@ -7,15 +7,15 @@ pipeline{
     }
     
     stages{
-        stage('git clone'){
+        stage('build'){
             steps{
-                git url: 'https://github.com/PankajSonii/saidemytrend.git', branch: 'main' 
+                sh 'mvn clean deploy -Dmaven.test.skip=true'
             }
         }
         
-        stage("build"){
+        stage("Test"){
             steps{
-                sh "mvn clean package"
+                sh "mvn surefire-report: report"
             }
         }
         
