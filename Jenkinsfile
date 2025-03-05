@@ -7,19 +7,19 @@ pipeline {
     }
 
     stages {
-        stage('build') {
+        stage('Build') {
             steps {
                 sh 'mvn clean deploy -Dmaven.test.skip=true'
             }
         }
 
-        stage("Test") {
+        stage('Test') {
             steps {
                 sh "mvn surefire-report:report"
             }
         }
 
-        stage('sonarqube-analysis') {
+        stage('SonarQube Analysis') {
             environment {
                 scannerHome = tool 'pankaj-sonar-scanner'
             }
@@ -34,13 +34,15 @@ pipeline {
         stage('Jar Publish') {
             steps {
                 script {
+                    echo "BUILD_ID: ${env.BUILD_ID}"
+                    echo "GIT_COMMIT: ${env.GIT_COMMIT}"
                     def server = Artifactory.newServer url: registry + "/artifactory", credentialsId: "artifact-cred"
-                    def properties = "buildid = ${env.BUILD_ID},commitid=${env.GIT_COMMIT}" // Ensure GIT_COMMIT is available
+                    def properties = "buildid=${env.BUILD_ID},commitid=${env.GIT_COMMIT}"
                     def uploadSpec = """
                     {
                         "files": [
                             {
-                                "pattern": "target/*.jar", // Adjust if your jar is in a different location
+                                "pattern": "target/*.jar",
                                 "target": "soni-libs-release-local/",
                                 "flat": "false",
                                 "props": "${properties}",
@@ -49,7 +51,6 @@ pipeline {
                         ]
                     }
                     """
-
                     def buildInfo = server.upload(uploadSpec)
                     buildInfo.env.collect()
                     server.publishBuildInfo(buildInfo)
